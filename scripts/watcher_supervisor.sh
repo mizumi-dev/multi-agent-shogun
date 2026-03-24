@@ -41,8 +41,8 @@ start_watcher_if_missing() {
 }
 
 while true; do
-    start_watcher_if_missing "shogun" "shogun:main.0" "logs/inbox_watcher_shogun.log"
-    start_watcher_if_missing "karo" "multiagent:agents.0" "logs/inbox_watcher_karo.log"
+    start_watcher_if_missing "shogun" "multiagent:agents.0" "logs/inbox_watcher_shogun.log"
+    start_watcher_if_missing "karo" "shogun:main.0" "logs/inbox_watcher_karo.log"
     start_watcher_if_missing "ashigaru1" "multiagent:agents.1" "logs/inbox_watcher_ashigaru1.log"
     start_watcher_if_missing "ashigaru2" "multiagent:agents.2" "logs/inbox_watcher_ashigaru2.log"
     start_watcher_if_missing "ashigaru3" "multiagent:agents.3" "logs/inbox_watcher_ashigaru3.log"

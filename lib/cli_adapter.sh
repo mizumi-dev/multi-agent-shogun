@@ -131,6 +131,8 @@ build_cli_command() {
     model=$(get_agent_model "$agent_id")
     local thinking
     thinking=$(_cli_adapter_read_yaml "cli.agents.${agent_id}.thinking" "")
+    local effort
+    effort=$(_cli_adapter_read_yaml "cli.agents.${agent_id}.effort" "")
 
     # thinking prefix: Claude CLI でのみ有効
     # thinking: true or 未設定 → そのまま（デフォルトでThinking ON）
@@ -145,6 +147,10 @@ build_cli_command() {
             local cmd="claude"
             if [[ -n "$model" ]]; then
                 cmd="$cmd --model $model"
+            fi
+            # effort: low/medium/high/max → --effort フラグ付与
+            if [[ -n "$effort" && "$effort" =~ ^(low|medium|high|max)$ ]]; then
+                cmd="$cmd --effort $effort"
             fi
             cmd="$cmd --dangerously-skip-permissions"
             echo "${prefix}${cmd}"

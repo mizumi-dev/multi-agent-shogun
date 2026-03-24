@@ -59,14 +59,14 @@ if [ "$STOP_HOOK_ACTIVE" = "True" ]; then
     FLAG="${IDLE_FLAG_DIR:-/tmp}/shogun_idle_${AGENT_ID}"
     touch "$FLAG"
     # stop_hook_active=True 時も inotifywait 待機（連続処理ループ対応）
-    # タイムアウト(55秒)でexit 0 → ループは有限回で終了
+    # タイムアウト(45秒)でexit 0 → ループは有限回で終了（60s hook timeout内に収める）
     WATCH_TARGETS_ACTIVE=("$INBOX")
     if [ "$AGENT_ID" = "shogun" ]; then
         WATCH_TARGETS_ACTIVE+=("$SCRIPT_DIR/dashboard.md")
     fi
     if command -v inotifywait &>/dev/null; then
         inotifywait -e close_write -e moved_to \
-            --timeout 55 \
+            --timeout 45 \
             "${WATCH_TARGETS_ACTIVE[@]}" 2>/dev/null || true
     fi
     UNREAD_COUNT=$(grep -c 'read: false' "$INBOX" 2>/dev/null || true)
@@ -98,7 +98,7 @@ if [ -n "$LAST_MSG" ]; then
 
     # Send notification to karo (background, non-blocking)
     # Shogun doesn't report to karo — skip notification
-    if [ -n "$NOTIFY_TYPE" ] && [ "$AGENT_ID" != "shogun" ]; then
+    if [ -n "$NOTIFY_TYPE" ] && [ "$AGENT_ID" != "shogun" ] && [ "$AGENT_ID" != "karo" ]; then
         bash "$SCRIPT_DIR/scripts/inbox_write.sh" karo \
             "$NOTIFY_CONTENT" \
             "$NOTIFY_TYPE" "$AGENT_ID" &
@@ -118,7 +118,7 @@ UNREAD_COUNT=$(grep -c 'read: false' "$INBOX" 2>/dev/null || true)
 FLAG="${IDLE_FLAG_DIR:-/tmp}/shogun_idle_${AGENT_ID}"
 if [ "${UNREAD_COUNT:-0}" -eq 0 ]; then
     touch "$FLAG"
-    # inotifywait で inbox 変更を最大55秒待機
+    # inotifywait で inbox 変更を最大45秒待機（60s hook timeout内に収める）
     # dashboard.md も監視（shogunの場合のみ）
     WATCH_TARGETS=("$INBOX")
     if [ "$AGENT_ID" = "shogun" ]; then
@@ -126,7 +126,7 @@ if [ "${UNREAD_COUNT:-0}" -eq 0 ]; then
     fi
     if command -v inotifywait &>/dev/null; then
         inotifywait -e close_write -e moved_to \
-            --timeout 55 \
+            --timeout 45 \
             "${WATCH_TARGETS[@]}" 2>/dev/null || true
     else
         # inotifywait not available: fall through to exit 0
